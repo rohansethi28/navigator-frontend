@@ -3,16 +3,24 @@ let edges = [];
 const nodeMap = {}; // id -> {x,y}
 let currentPath = [];
 
+// Replace this with your Render backend URL
+const BACKEND_URL = "https://navigator-project.onrender.com";
+
 async function loadData() {
-  const resNodes = await fetch('/api/nodes');
-  nodes = await resNodes.json();
-  nodes.forEach(n => nodeMap[n.id] = { x: n.x, y: n.y });
+  try {
+    const resNodes = await fetch(`${BACKEND_URL}/api/nodes`);
+    nodes = await resNodes.json();
+    nodes.forEach(n => nodeMap[n.id] = { x: n.x, y: n.y });
 
-  const resEdges = await fetch('/api/edges');
-  edges = await resEdges.json();
+    const resEdges = await fetch(`${BACKEND_URL}/api/edges`);
+    edges = await resEdges.json();
 
-  populateDropdowns();
-  drawGraph();
+    populateDropdowns();
+    drawGraph();
+  } catch (err) {
+    console.error(err);
+    document.getElementById('output').innerText = 'Failed to load data. Is the backend running?';
+  }
 }
 
 function populateDropdowns() {
@@ -81,22 +89,33 @@ function drawGraph() {
 document.getElementById('findBtn').addEventListener('click', async () => {
   const src = document.getElementById('source').value;
   const dst = document.getElementById('destination').value;
-  if (!src || !dst) { document.getElementById('output').innerText = 'Select both places.'; return; }
-  if (src === dst) { document.getElementById('output').innerText = 'Source and destination are same.'; currentPath = []; drawGraph(); return; }
-  const res = await fetch(`/api/shortest-path?source=${encodeURIComponent(src)}&destination=${encodeURIComponent(dst)}`);
-  const path = await res.json();
-  if (!path || path.length === 0) {
-    document.getElementById('output').innerText = 'No path found.';
-    currentPath = [];
-  } else {
-    document.getElementById('output').innerText = 'Shortest Path: ' + path.join(' → ');
-    currentPath = path;
+  if (!src || !dst) { 
+    document.getElementById('output').innerText = 'Select both places.'; 
+    return; 
   }
-  drawGraph();
+  if (src === dst) { 
+    document.getElementById('output').innerText = 'Source and destination are same.'; 
+    currentPath = []; 
+    drawGraph(); 
+    return; 
+  }
+  try {
+    const res = await fetch(`${BACKEND_URL}/api/shortest-path?source=${encodeURIComponent(src)}&destination=${encodeURIComponent(dst)}`);
+    const path = await res.json();
+    if (!path || path.length === 0) {
+      document.getElementById('output').innerText = 'No path found.';
+      currentPath = [];
+    } else {
+      document.getElementById('output').innerText = 'Shortest Path: ' + path.join(' → ');
+      currentPath = path;
+    }
+    drawGraph();
+  } catch(err) {
+    console.error(err);
+    document.getElementById('output').innerText = 'Failed to fetch path. Is the backend running?';
+  }
 });
 
 // initial load
-loadData().catch(err => {
-  console.error(err);
-  document.getElementById('output').innerText = 'Failed to load data. Is the backend running?';
-});
+loadData();
+
