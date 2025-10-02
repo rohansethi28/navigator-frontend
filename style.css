@@ -1,0 +1,29 @@
+body {
+  font-family: Arial, sans-serif;
+  text-align: center;
+  background: #f7f7f7;
+  margin: 0;
+  padding: 10px;
+}
+
+h1 { color: #222; }
+
+.controls {
+  margin: 10px 0;
+}
+
+label { margin: 0 8px; }
+select { padding: 6px; margin-right: 10px; }
+button { padding: 6px 12px; }
+
+#output {
+  margin-top: 10px;
+  min-height: 22px;
+  font-weight: bold;
+}
+
+canvas {
+  border: 1px solid #ccc;
+  margin-top: 12px;
+  background: #fff;
+}
